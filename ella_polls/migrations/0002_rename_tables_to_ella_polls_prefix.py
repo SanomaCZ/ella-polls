@@ -18,6 +18,10 @@ class Migration(SchemaMigration):
         db.rename_table('polls_contestant', 'ella_polls_contestant')
         db.rename_table('polls_result', 'ella_polls_result')
 
+        # rename app in contenttypes table
+        if not db.dry_run:
+            orm['contenttypes.contenttype'].objects.filter(app_label='polls').update(app_label='ella_polls')
+
 
     def backwards(self, orm):
         db.rename_table('ella_polls_poll', 'polls_poll')
@@ -30,6 +34,10 @@ class Migration(SchemaMigration):
         db.rename_table('ella_polls_vote', 'polls_vote')
         db.rename_table('ella_polls_contestant', 'polls_contestant')
         db.rename_table('ella_polls_result', 'polls_result')
+
+        # rename app in contenttypes table
+        if not db.dry_run:
+            orm['contenttypes.contenttype'].objects.filter(app_label='ella_polls').update(app_label='polls')
 
 
     models = {
