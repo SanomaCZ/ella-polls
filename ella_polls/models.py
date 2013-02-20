@@ -155,7 +155,7 @@ class Contest(BasePoll, Publishable):
         return self.title
 
     @property
-    @cache_this(lambda f, self: 'contest:%d:questions' % self.pk)
+    @cache_this(lambda self, *args, **kwargs: 'contest:%d:questions' % self.pk)
     def questions(self):
         return list(Question.objects.filter(contest=self))
 
@@ -197,7 +197,7 @@ class Quiz(BasePoll, Publishable):
         return self.title
 
     @property
-    @cache_this(lambda f, self: 'quiz:%d:questions' % self.pk)
+    @cache_this(lambda self, *args, **kwargs: 'quiz:%d:questions' % self.pk)
     def questions(self):
         return list(Question.objects.filter(quiz=self))
 
@@ -471,7 +471,7 @@ class Result(models.Model):
             return self.title
         return u'%s (%d - %d)' % (self.quiz, self.points_from, self.points_to)
 
-    @cache_this(lambda f, self: 'result:%d:total' % self.quiz.pk)
+    @cache_this(lambda self, *args, **kwargs: 'result:%d:total' % self.quiz.pk)
     def total(self):
         """
         Returns count of displayed quiz results
