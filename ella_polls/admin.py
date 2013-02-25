@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.forms.util import ValidationError
 from django.forms.models import BaseInlineFormSet
+from django.forms import ModelForm, ValidationError
 from django.shortcuts import render_to_response
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _, ugettext
@@ -9,7 +10,55 @@ from ella.core.admin import ListingInlineAdmin
 from ella.core.cache import get_cached_object_or_404
 
 from ella_polls.models import Poll, Contest, Contestant, Quiz, Result, Choice, \
-    Vote, Question
+    Vote, Question, Result, Survey
+
+
+class DateSpanModelForm(ModelForm):
+    def clean(self):
+        d = super(DateSpanModelForm, self).clean()
+        if not self.is_valid():
+            return d
+        if d['active_from'] and d['active_till'] and d['active_from'] > d['active_till']:
+            raise ValidationError(_('Active till must be later than active from.'))
+        return d
+
+
+class ContestForm(DateSpanModelForm):
+    class Meta:
+        model = Contest
+
+
+class QuizForm(DateSpanModelForm):
+    class Meta:
+        model = Quiz
+
+
+class SurveyForm(DateSpanModelForm):
+    class Meta:
+        model = Survey
+
+
+class PollForm(DateSpanModelForm):
+    class Meta:
+        model = Poll
+
+
+class ResultForm(ModelForm):
+    class Meta:
+        model = Result
+
+    def __init__(self, *args, **kwargs):
+        super(ResultForm, self).__init__(*args, **kwargs)
+        self.fields['count'].required = False
+
+    def clean(self):
+        self.cleaned_data = super(ResultForm, self).clean()
+        if not self.cleaned_data['count']:
+            self.cleaned_data['count'] = u'0'
+        if not self.is_valid():
+            return
+            return self.cleaned_data
+
 
 class ResultFormset(BaseInlineFormSet):
     def clean(self):
@@ -40,6 +89,7 @@ class ResultFormset(BaseInlineFormSet):
 
 class ResultTabularOptions(admin.TabularInline):
     model = Result
+    orm = ResultForm
     extra = 5
     formset = ResultFormset
 
@@ -56,8 +106,9 @@ class QuestionOptions(admin.ModelAdmin):
     """
     inlines = (ChoiceTabularOptions,)
     ordering = ('question',)
-    search_fields = ('question',)
-    rich_text_fields = {'small': ('question',)}
+    search_fields = ('question', 'quiz__title', 'contest__title')
+    #list_filter = ('quiz__title', 'contest__title',)
+    #rich_text_fields = {'small': ('question',)}
 
 
 class ChoiceOptions(admin.ModelAdmin):
@@ -98,6 +149,7 @@ class ContestOptions(admin.ModelAdmin):
                 {'contestants' : contestants, 'title' : title, 'module_name' : module_name})
         return super(ContestOptions, self).__call__(request, url)
 
+    form = ContestForm
     list_display = ('title', 'category', 'active_from', 'correct_answers',
         'get_all_answers_count', 'pk', 'get_domain_url',)
     list_filter = ('category', 'active_from',)
@@ -106,7 +158,7 @@ class ContestOptions(admin.ModelAdmin):
     raw_id_fields = ('photo',)
     prepopulated_fields = {'slug' : ('title',)}
     # rich_text_fields = {'small': ('text_announcement', 'text', 'text_results',)}
-    rich_text_fields = {'small': ('description',), None: ('text',)}
+    #rich_text_fields = {'small': ('description',), None: ('text',)}
 
     def correct_answers(self, obj):
         """
@@ -123,6 +175,7 @@ class ContestOptions(admin.ModelAdmin):
 
 
 class QuizOptions(admin.ModelAdmin):
+    form = QuizForm
     list_display = ('title', 'category', 'active_from', 'pk', 'get_domain_url',)
     list_filter = ('category', 'active_from',)
     search_fields = ('title', 'desc', 'text', 'text_results',)
@@ -130,20 +183,37 @@ class QuizOptions(admin.ModelAdmin):
     raw_id_fields = ('photo',)
     prepopulated_fields = {'slug' : ('title',)}
     # rich_text_fields = {'small': ('text', 'text_results',)}
-    rich_text_fields = {'small': ('description',), None: ('text',)}
+    #rich_text_fields = {'small': ('description',), None: ('text',)}
     suggest_fields = {'authors': ('name', 'slug',), }
 
 
 class PollOptions(admin.ModelAdmin):
     # rich_text_fields = {'small': ('text', 'text_results',)}
-    rich_text_fields = {'small': ('text',)}
+    #rich_text_fields = {'small': ('text',)}
+    form = PollForm
     list_display = ('title', 'question', 'get_total_votes', 'pk',)
     list_filter = ('active_from',)
     search_fields = ('title', 'text', 'text_results', 'question__question',)
     raw_id_fields = ('question',)
 
 
+class SurveyChoiceInlineAdmin(admin.TabularInline):
+    exclude = ('points', 'votes',)
+    model = Choice
+    extra = 5
+
+
+class SurveyOptions(admin.ModelAdmin):
+    form = SurveyForm
+    exclude = ('quiz', 'contest', 'allow_no_choice', 'allow_multiple')
+    list_display = ('__unicode__', 'get_total_votes',)
+    list_filter = ('active_from', 'active_till',)
+    search_fields = ('question',)
+    inlines = [SurveyChoiceInlineAdmin]
+
+
 admin.site.register(Poll, PollOptions)
+admin.site.register(Survey, SurveyOptions)
 admin.site.register(Contest, ContestOptions)
 admin.site.register(Quiz, QuizOptions)
 admin.site.register(Question, QuestionOptions)
