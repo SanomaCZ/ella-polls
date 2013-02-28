@@ -10,7 +10,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils.safestring import mark_safe
 
 from ella.core.models import Publishable
-from ella.core.cache import get_cached_object, cache_this
+from ella.core.cache import CachedForeignKey, get_cached_object, cache_this
 from ella.core.box import Box
 
 from ella_polls.conf import polls_settings
@@ -110,7 +110,7 @@ class BasePoll(models.Model):
 
 class Poll(BasePoll):
     title = models.CharField(_('Title'), max_length=200)
-    question = models.ForeignKey('Question', verbose_name=_('Question'),
+    question = CachedForeignKey('Question', verbose_name=_('Question'),
         unique=True)
 
     box_class = PollBox
@@ -218,8 +218,8 @@ class Question(models.Model):
     question = models.TextField(_('Question text'))
     allow_multiple = models.BooleanField(_('Allow multiple choices'), default=False)
     allow_no_choice = models.BooleanField(_('Allow no choice'), default=False)
-    quiz = models.ForeignKey(Quiz, blank=True, null=True, verbose_name=_('Quiz'))
-    contest = models.ForeignKey(Contest, blank=True, null=True,
+    quiz = CachedForeignKey(Quiz, blank=True, null=True, verbose_name=_('Quiz'))
+    contest = CachedForeignKey(Contest, blank=True, null=True,
         verbose_name=_('Contest'))
 
     class Meta:
@@ -259,7 +259,7 @@ class Question(models.Model):
 
 
 class Choice(models.Model):
-    question = models.ForeignKey('Question', verbose_name=_('Question'))
+    question = CachedForeignKey('Question', verbose_name=_('Question'))
     choice = models.TextField(_('Choice text'))
     points = models.IntegerField(_('Points'), default=1, blank=True, null=True)
     votes = models.IntegerField(_('Votes'), default=0, blank=True)
@@ -380,8 +380,8 @@ class SurveyVote(models.Model):
     """
     User votes records to ensure unique votes. For Polls only.
     """
-    survey = models.ForeignKey(Survey, verbose_name=_('Survey'))
-    user = models.ForeignKey(User, blank=True, null=True, verbose_name=_('User'))
+    survey = CachedForeignKey(Survey, verbose_name=_('Survey'))
+    user = CachedForeignKey(User, blank=True, null=True, verbose_name=_('User'))
     time = models.DateTimeField(_('Time'), auto_now=True)
     ip_address = models.IPAddressField(_('IP Address'), null=True)
 
@@ -398,8 +398,8 @@ class Vote(models.Model):
     """
     User votes records to ensure unique votes. For Polls only.
     """
-    poll = models.ForeignKey(Poll, verbose_name=_('Poll'))
-    user = models.ForeignKey(User, blank=True, null=True, verbose_name=_('User'))
+    poll = CachedForeignKey(Poll, verbose_name=_('Poll'))
+    user = CachedForeignKey(User, blank=True, null=True, verbose_name=_('User'))
     time = models.DateTimeField(_('Time'), auto_now=True)
     ip_address = models.IPAddressField(_('IP Address'), null=True)
 
@@ -416,9 +416,9 @@ class Contestant(models.Model):
     """
     Contestant info.
     """
-    contest = models.ForeignKey(Contest, verbose_name=_('Contest'))
+    contest = CachedForeignKey(Contest, verbose_name=_('Contest'))
     datetime = models.DateTimeField(_('Date and time'), auto_now_add=True)
-    user = models.ForeignKey(User, null=True, blank=True, verbose_name=_('User'))
+    user = CachedForeignKey(User, null=True, blank=True, verbose_name=_('User'))
     name = models.CharField(_('First name'), max_length=200)
     surname = models.CharField(_('Last name'), max_length=200)
     email = models.EmailField(_('email'))
@@ -455,7 +455,7 @@ class Result(models.Model):
     """
     Quiz results for knowledge comparation.)
     """
-    quiz = models.ForeignKey(Quiz, verbose_name=_('Quiz'))
+    quiz = CachedForeignKey(Quiz, verbose_name=_('Quiz'))
     title = models.CharField(_('Title'), max_length=200, blank=True)
     text = models.TextField(_('Quiz results text'))
     points_from = models.IntegerField(_('Points dimension from'), null=True)
