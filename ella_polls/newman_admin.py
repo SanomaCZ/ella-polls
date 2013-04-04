@@ -324,7 +324,7 @@ try:
         correct_answers.allow_tags = True
 
         def get_all_answers_count(self, obj):
-            return obj.contestant_set.count()
+            return obj.contestant_old_set.count()
         get_all_answers_count.short_description = _('Participants in total')
 
 

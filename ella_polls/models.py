@@ -15,6 +15,7 @@ from ella.core.box import Box
 
 from ella_polls.conf import polls_settings
 
+
 class PollBox(Box):
     can_double_render = True
 
@@ -39,16 +40,16 @@ class PollBox(Box):
         # state = views.poll_check_vote(self._context['request'], self.obj)
         poll = self.obj
         cont.update({
-            'photo_slug' : self.params.get('photo_slug', ''),
-            'state' : self.state,
+            'photo_slug': self.params.get('photo_slug', ''),
+            'state': self.state,
             'activity': poll.current_activity_state,
-            'state_voted' : polls_settings.USER_ALLREADY_VOTED,
-            'state_just_voted' : polls_settings.USER_JUST_VOTED,
-            'state_not_yet_voted' : polls_settings.USER_NOT_YET_VOTED,
-            'state_no_choice' : polls_settings.USER_NO_CHOICE,
-            'activity_not_yet_active' : polls_settings.ACTIVITY_NOT_YET_ACTIVE,
-            'activity_active' : polls_settings.ACTIVITY_ACTIVE,
-            'activity_closed' : polls_settings.ACTIVITY_CLOSED, })
+            'state_voted': polls_settings.USER_ALLREADY_VOTED,
+            'state_just_voted': polls_settings.USER_JUST_VOTED,
+            'state_not_yet_voted': polls_settings.USER_NOT_YET_VOTED,
+            'state_no_choice': polls_settings.USER_NO_CHOICE,
+            'activity_not_yet_active': polls_settings.ACTIVITY_NOT_YET_ACTIVE,
+            'activity_active': polls_settings.ACTIVITY_ACTIVE,
+            'activity_closed': polls_settings.ACTIVITY_CLOSED, })
         return cont
 
 
@@ -145,7 +146,10 @@ class Poll(BasePoll):
         return Vote.objects.filter(poll=self, ip_address=ip_address,
             time__gte=treshold).count() > 0
 
+
 class Contest(BasePoll, Publishable):
+    publishable_ptr = models.OneToOneField(Publishable, parent_link=True, related_name='contest_old')
+
     class Meta:
         verbose_name = _('Contest')
         verbose_name_plural = _('Contests')
@@ -180,7 +184,6 @@ class Contest(BasePoll, Publishable):
             .extra(select={'count_guess_difference': 'ABS(%s - %d)' %
                 (connection.ops.quote_name('count_guess'), count)})
             .order_by('count_guess_difference'))
-
 
 
 class Quiz(BasePoll, Publishable):
@@ -319,16 +322,16 @@ class SurveyBox(Box):
         # state = views.poll_check_vote(self._context['request'], self.obj)
         poll = self.obj
         cont.update({
-            'photo_slug' : self.params.get('photo_slug', ''),
-            'state' : self.state,
+            'photo_slug': self.params.get('photo_slug', ''),
+            'state': self.state,
             'activity': poll.current_activity_state,
-            'state_voted' : polls_settings.USER_ALLREADY_VOTED,
-            'state_just_voted' : polls_settings.USER_JUST_VOTED,
-            'state_not_yet_voted' : polls_settings.USER_NOT_YET_VOTED,
-            'state_no_choice' : polls_settings.USER_NO_CHOICE,
-            'activity_not_yet_active' : polls_settings.ACTIVITY_NOT_YET_ACTIVE,
-            'activity_active' : polls_settings.ACTIVITY_ACTIVE,
-            'activity_closed' : polls_settings.ACTIVITY_CLOSED
+            'state_voted': polls_settings.USER_ALLREADY_VOTED,
+            'state_just_voted': polls_settings.USER_JUST_VOTED,
+            'state_not_yet_voted': polls_settings.USER_NOT_YET_VOTED,
+            'state_no_choice': polls_settings.USER_NO_CHOICE,
+            'activity_not_yet_active': polls_settings.ACTIVITY_NOT_YET_ACTIVE,
+            'activity_active': polls_settings.ACTIVITY_ACTIVE,
+            'activity_closed': polls_settings.ACTIVITY_CLOSED
         })
         return cont
 
@@ -375,7 +378,6 @@ class Survey(Question):
             time__gte=treshold).count() > 0
 
 
-
 class SurveyVote(models.Model):
     """
     User votes records to ensure unique votes. For Polls only.
@@ -418,7 +420,8 @@ class Contestant(models.Model):
     """
     contest = CachedForeignKey(Contest, verbose_name=_('Contest'))
     datetime = models.DateTimeField(_('Date and time'), auto_now_add=True)
-    user = CachedForeignKey(User, null=True, blank=True, verbose_name=_('User'))
+    user = CachedForeignKey(User, null=True, blank=True, verbose_name=_('User'),
+                            related_name='contestant_old_set')
     name = models.CharField(_('First name'), max_length=200)
     surname = models.CharField(_('Last name'), max_length=200)
     email = models.EmailField(_('email'))
@@ -487,6 +490,3 @@ class Result(models.Model):
 
     def get_text(self):
         return mark_safe(u'%s' % self.text)
-
-
-
