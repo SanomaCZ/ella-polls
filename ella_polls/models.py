@@ -358,6 +358,10 @@ class Survey(Question):
         choice.add_vote()
 
     @property
+    def title(self):
+        return self.__unicode__()
+
+    @property
     def current_activity_state(self):
         """
         Objects current life-cycle stage
