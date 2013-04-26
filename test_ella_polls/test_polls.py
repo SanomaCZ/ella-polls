@@ -16,6 +16,10 @@ from ella_polls import views, conf
 # with in the project itself somehow
 from ella_polls import register
 
+try:
+    from django.utils.timezone import now
+except ImportError:
+    now = datetime.now
 
 
 def create_poll(case):
@@ -30,8 +34,8 @@ def create_poll(case):
         text_announcement=u'Some\nannouncement\ntext',
         text=u'Some\ntext',
         text_results=u'Some\ntext\nwith\nresults',
-        active_from=datetime.now() - timedelta(1),
-        active_till=datetime.now() + timedelta(1),
+        active_from=now() - timedelta(1),
+        active_till=now() + timedelta(1),
         question=case.question,
     )
     case.choiceA = Choice.objects.create(question=case.question, choice='A')

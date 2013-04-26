@@ -15,6 +15,11 @@ from ella.core.box import Box
 
 from ella_polls.conf import polls_settings
 
+try:
+    from django.utils.timezone import now
+except ImportError:
+    now = datetime.now
+
 
 class PollBox(Box):
     can_double_render = True
@@ -92,9 +97,9 @@ class BasePoll(models.Model):
         """
         Objects current life-cycle stage
         """
-        if self.active_till and self.active_till < datetime.now():
+        if self.active_till and self.active_till < now():
             return polls_settings.ACTIVITY_CLOSED
-        elif self.active_from and self.active_from > datetime.now():
+        elif self.active_from and self.active_from > now():
             return polls_settings.ACTIVITY_NOT_YET_ACTIVE
         else:
             return polls_settings.ACTIVITY_ACTIVE
@@ -366,9 +371,9 @@ class Survey(Question):
         """
         Objects current life-cycle stage
         """
-        if self.active_till and self.active_till < datetime.now():
+        if self.active_till and self.active_till < now():
             return polls_settings.ACTIVITY_CLOSED
-        elif self.active_from and self.active_from > datetime.now():
+        elif self.active_from and self.active_from > now():
             return polls_settings.ACTIVITY_NOT_YET_ACTIVE
         else:
             return polls_settings.ACTIVITY_ACTIVE

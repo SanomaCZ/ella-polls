@@ -22,6 +22,14 @@ from ella.core.views import get_templates_from_publishable
 from ella_polls.models import Poll, Contestant, Survey
 from ella_polls.conf import polls_settings
 
+try:
+    from django.utils.timezone import now
+    utcnow = now
+except ImportError:
+    now = datetime.now
+    utcnow = datetime.utcnow
+
+
 def get_next_url(request):
     """
     Return URL for redirection
@@ -167,7 +175,7 @@ def poll_vote(request, poll_id):
         if len(cook) > polls_settings.POLL_MAX_COOKIE_LENGTH:
             cook = cook[1:]
         cook.append(str(poll.id))
-        expires = datetime.strftime(datetime.utcnow() + \
+        expires = datetime.strftime(utcnow() + \
             timedelta(seconds=polls_settings.POLL_MAX_COOKIE_AGE),
             "%a, %d-%b-%Y %H:%M:%S GMT")
         response.set_cookie(
@@ -236,7 +244,7 @@ def survey_vote(request, survey_id):
         if len(cook) > polls_settings.SURVEY_MAX_COOKIE_LENGTH:
             cook = cook[1:]
         cook.append(str(survey.id))
-        expires = datetime.strftime(datetime.utcnow() + timedelta(seconds=polls_settings.SURVEY_MAX_COOKIE_AGE), "%a, %d-%b-%Y %H:%M:%S GMT")
+        expires = datetime.strftime(utcnow() + timedelta(seconds=polls_settings.SURVEY_MAX_COOKIE_AGE), "%a, %d-%b-%Y %H:%M:%S GMT")
         response.set_cookie(
             polls_settings.SURVEY_COOKIE_NAME,
             value=','.join(cook),

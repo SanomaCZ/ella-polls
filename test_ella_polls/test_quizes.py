@@ -11,12 +11,19 @@ from test_ella import template_loader
 
 from ella_polls.models import Quiz, Question, Choice, Result
 
+try:
+    from django.utils.timezone import now
+except ImportError:
+    now = datetime.now
+
 QCOUNT = 3
 CCOUNT = 2
+
+
 class QuizTestCase(TestCase):
     def setUp(self):
         super(QuizTestCase, self).setUp()
-        now = datetime.now()
+        now_datetime = now()
         day = timedelta(days=1)
         create_basic_categories(self)
 
@@ -27,9 +34,9 @@ class QuizTestCase(TestCase):
                 category=self.category,
                 text_announcement='Text with announcement',
                 text='Some text',
-                active_from=now - day,
-                active_till=now + day,
-                publish_from=now - day,
+                active_from=now_datetime - day,
+                active_till=now_datetime + day,
+                publish_from=now_datetime - day,
                 published=True
             )
         self.questions = [
