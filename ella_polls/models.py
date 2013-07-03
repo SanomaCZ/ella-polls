@@ -156,8 +156,8 @@ class Contest(BasePoll, Publishable):
     publishable_ptr = models.OneToOneField(Publishable, parent_link=True, related_name='contest_old')
 
     class Meta:
-        verbose_name = _('Contest')
-        verbose_name_plural = _('Contests')
+        verbose_name = _('Old contest')
+        verbose_name_plural = _('Old contests')
         ordering = ('-active_from',)
 
     def __unicode__(self):
