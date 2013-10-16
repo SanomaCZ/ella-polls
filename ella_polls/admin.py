@@ -1,16 +1,27 @@
+import csv
+
 from django.contrib import admin
 from django.forms.util import ValidationError
 from django.forms.models import BaseInlineFormSet
 from django.forms import ModelForm, ValidationError
+from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _, ugettext
+from django.conf.urls import patterns, url
+from django.core.urlresolvers import reverse
+from django.template import loader, RequestContext
+
 
 from ella.core.admin import ListingInlineAdmin
 from ella.core.cache import get_cached_object_or_404
 
 from ella_polls.models import Poll, Contest, Contestant, Quiz, Result, Choice, \
     Vote, Question, Result, Survey
+
+
+def encode_item(item):
+    return unicode(item).encode("utf-8", "replace")
 
 
 class DateSpanModelForm(ModelForm):
@@ -136,18 +147,7 @@ class ContestantOptions(admin.ModelAdmin):
     list_display = ('name', 'surname', 'user', 'datetime', 'contest', 'points', 'winner')
 
 
-
 class ContestOptions(admin.ModelAdmin):
-    def __call__(self, request, url):
-        if url and url.endswith('correct_answers'):
-            pk = url.split('/')[-2]
-            contest = get_cached_object_or_404(Contest, pk=pk)
-            contestants = contest.get_correct_answers()
-            title = u"%s '%s': %s" % (Contest._meta.verbose_name, contest.title, _('Correct Answers'))
-            module_name = Contestant._meta.module_name
-            return render_to_response('admin/polls/answer/correct.html',
-                {'contestants' : contestants, 'title' : title, 'module_name' : module_name})
-        return super(ContestOptions, self).__call__(request, url)
 
     form = ContestForm
     list_display = ('title', 'category', 'active_from', 'correct_answers',
@@ -160,17 +160,91 @@ class ContestOptions(admin.ModelAdmin):
     # rich_text_fields = {'small': ('text_announcement', 'text', 'text_results',)}
     #rich_text_fields = {'small': ('description',), None: ('text',)}
 
+    def get_urls(self):
+        urls = super(ContestOptions, self).get_urls()
+        extra_urls = patterns('',
+            url(r'^(\d+)/correct-answers/$',
+                self.admin_site.admin_view(self.correct_answer_view),
+                name='contest-correct-answers'),
+        )
+        return extra_urls + urls
+
+    def correct_answer_view(self, request, contest_pk, extra_context=None):
+        contest = get_cached_object_or_404(Contest, pk=contest_pk)
+        contestants = contest.get_correct_answers()
+        title = u"%s '%s': %s" % (Contest._meta.verbose_name, contest.title, _('Correct Answers'))
+        module_name = Contestant._meta.module_name
+        context = {
+            'contest': contest,
+            'contestants': contestants,
+            'title': title,
+            'module_name': module_name
+        }
+
+        if (request.GET.get('type') == 'excel'):
+            response = render_to_response(
+                'admin/polls/correct-answers-excel.html',
+                context,
+                RequestContext(request)
+            )
+            response['Content-Disposition'] = 'attachment; filename=contest_%s.xls' % contest.pk
+            response['Content-Type'] = 'application/vnd.ms-excel;charset=utf-8'
+            return response
+        elif (request.GET.get('type') == 'csv'):
+            response = HttpResponse(mimetype='text/csv')
+            response['Content-Disposition'] = 'attachment; filename=contest_%s.csv' % contest.pk
+            writer = csv.writer(response)
+            head = [
+                encode_item(_('Count Guess Difference')),
+                encode_item(_('Name')),
+                encode_item(_('Surname')),
+                encode_item(_('User')),
+                encode_item(_('Email')),
+                encode_item(_('Phone number')),
+                encode_item(_('Address')),
+                encode_item(_('Winner')),
+            ]
+            writer.writerow(list(head))
+            for contestant in contestants:
+                row = [
+                    encode_item(contestant.count_guess_difference),
+                    encode_item(contestant.name),
+                    encode_item(contestant.surname),
+                    encode_item(contestant.user),
+                    encode_item(contestant.email),
+                    encode_item(contestant.phonenumber),
+                    encode_item(contestant.address),
+                    encode_item(contestant.winner and _('Yes') or _('No')),
+                ]
+                writer.writerow(list(row))
+            return response
+        else:
+            return render_to_response(
+                'admin/polls/correct-answers.html',
+                context,
+                RequestContext(request)
+            )
+
     def correct_answers(self, obj):
         """
-        Admin's list column with a link to the list of contestants with
-        correct answers on the current contest
+        Admin's list column with a link to the list of contestants with correct answers on the current contest
         """
-        return mark_safe(u'<a href="%s/correct_answers/">%s - %s</a>' %
-            (obj.id, _('Correct Answers'), obj.title))
+        return mark_safe(u"""<a href='%(url)s'>%(link)s</a>
+            <br/>
+            <a href='%(url)s?type=excel'>%(excel)s</a>
+            <br/>
+            <a href='%(url)s?type=csv'>%(csv)s</a>
+            """ % {
+                'url': reverse('admin:contest-correct-answers', args=(obj.id,)),
+                'link': _('link'),
+                'excel': _('excel'),
+                'csv': _('csv'),
+        })
     correct_answers.allow_tags = True
+    correct_answers.short_description = _('Correct Answers')
 
     def get_all_answers_count(self, obj):
-        return Contestant.objects.filter(contest=obj).count()
+        return obj.contestant_set.count()
     get_all_answers_count.short_description = _('Participants in total')
 
 
