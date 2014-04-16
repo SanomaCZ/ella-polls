@@ -5,9 +5,10 @@ include MANIFEST.in
 include README.rst
 include dev_requirements.txt
 include requirements.txt
-recursive-include test_ella_polls *
+include setup.py
 recursive-include ella_polls/locale *
 recursive-include ella_polls/templates *
 
+global-exclude *.pyc
+global-exclude *.pyo
 global-exclude .coverage
-exclude test_ella_polls/settings/local.py

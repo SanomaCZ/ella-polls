@@ -45,8 +45,5 @@ setup(
         'south>=0.7',
         'ella>=3.0.0',
     ],
-    setup_requires=[
-        'setuptools_dummy',
-    ],
     test_suite='test_ella_polls.run_tests.run_all'
 )
