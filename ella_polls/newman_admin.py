@@ -8,7 +8,11 @@ try:
     from django.conf import settings
     from django.forms import ModelForm, ValidationError
     from django.utils.safestring import mark_safe
-    from django.conf.urls.defaults import patterns, url
+
+    try:
+        from django.conf.urls import patterns, url
+    except ImportError:  # Django < 1.4
+        from django.conf.urls.defaults import patterns, url
 
     from ella.core.newman_admin import ListingInlineAdmin, PublishableAdmin
     from ella.core.cache import get_cached_object_or_404
