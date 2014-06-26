@@ -5,7 +5,6 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models, connection
 from django.template.defaultfilters import striptags
-from django.utils.text import truncate_words
 from django.utils.translation import ugettext_lazy as _
 from django.utils.safestring import mark_safe
 
@@ -13,6 +12,7 @@ from ella.core.models import Publishable
 from ella.core.cache import CachedForeignKey, get_cached_object, cache_this
 from ella.core.box import Box
 
+from ella_polls.utils.text import truncate_words
 from ella_polls.conf import polls_settings
 
 try:
