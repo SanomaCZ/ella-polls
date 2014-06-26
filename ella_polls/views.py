@@ -15,15 +15,11 @@ from django.utils.safestring import mark_safe
 from django.utils.encoding import force_unicode
 from django.views.decorators.csrf import csrf_protect
 
-try:
-    from django.contrib.formtools.wizard import FormWizard
-except ImportError:
-    from ella_polls.utils.wizard import FormWizard
-
 from ella.core.cache import get_cached_object_or_404
 from ella.core.views import get_templates_from_publishable
 
 from ella_polls.models import Poll, Contestant, Survey
+from ella_polls.utils.wizard import FormWizard
 from ella_polls.conf import polls_settings
 
 try:
