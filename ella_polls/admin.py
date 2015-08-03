@@ -196,7 +196,7 @@ class ContestOptions(admin.ModelAdmin):
             response['Content-Type'] = 'application/vnd.ms-excel;charset=utf-8'
             return response
         elif (request.GET.get('type') == 'csv'):
-            response = HttpResponse(mimetype='text/csv')
+            response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename=contest_%s.csv' % contest.pk
             writer = csv.writer(response)
             head = [
