@@ -37,26 +37,31 @@ class DateSpanModelForm(ModelForm):
 class ContestForm(DateSpanModelForm):
     class Meta:
         model = Contest
+        fields = '__all__'
 
 
 class QuizForm(DateSpanModelForm):
     class Meta:
         model = Quiz
+        fields = '__all__'
 
 
 class SurveyForm(DateSpanModelForm):
     class Meta:
         model = Survey
+        fields = '__all__'
 
 
 class PollForm(DateSpanModelForm):
     class Meta:
         model = Poll
+        fields = '__all__'
 
 
 class ResultForm(ModelForm):
     class Meta:
         model = Result
+        fields = '__all__'
 
     def __init__(self, *args, **kwargs):
         super(ResultForm, self).__init__(*args, **kwargs)
