@@ -6,7 +6,6 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from django.http import HttpResponseRedirect, Http404
 from django import forms
 from django.views.decorators.http import require_POST
-from django.db import transaction
 from django.contrib.contenttypes.models import ContentType
 from django.template import RequestContext
 from django.contrib.sites.models import Site
@@ -20,6 +19,7 @@ from ella.core.views import get_templates_from_publishable
 
 from ella_polls.models import Poll, Contestant, Survey
 from ella_polls.utils.wizard import FormWizard
+from ella_polls.utils import transaction
 from ella_polls.conf import polls_settings
 
 try:
@@ -124,7 +124,7 @@ def survey_check_vote(request, survey):
 
 @csrf_protect
 @require_POST
-@transaction.commit_on_success
+@transaction.atomic
 def poll_vote(request, poll_id):
 
     poll_ct = ContentType.objects.get_for_model(Poll)
@@ -193,7 +193,7 @@ def poll_vote(request, poll_id):
 
 @csrf_protect
 @require_POST
-@transaction.commit_on_success
+@transaction.atomic
 def survey_vote(request, survey_id):
 
     survey_ct = ContentType.objects.get_for_model(Survey)
@@ -258,7 +258,7 @@ def survey_vote(request, survey_id):
     return response
 
 @csrf_protect
-@transaction.commit_on_success
+@transaction.atomic
 def contest_vote(request, context):
 
     contest = context['object']
@@ -378,7 +378,7 @@ class ContestantForm(forms.Form):
         return self.cleaned_data
 
 
-@transaction.commit_on_success
+@transaction.atomic
 def contest_finish(request, context, qforms, contestant_form):
     contest = context['object']
     email = contestant_form.cleaned_data['email']
