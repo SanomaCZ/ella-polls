@@ -15,7 +15,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
 
-from django.contrib.formtools.utils import form_hmac
+from formtools.utils import form_hmac
 
 
 class FormWizard(object):

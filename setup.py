@@ -43,6 +43,7 @@ setup(
         'setuptools>=0.6b1',
         'Django>=1.4.5',
         'ella>=3.0.0',
+        'django-formtools==1.0',
     ],
     test_suite='test_ella_polls.run_tests.run_all'
 )
