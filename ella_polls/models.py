@@ -394,7 +394,7 @@ class SurveyVote(models.Model):
     survey = CachedForeignKey(Survey, verbose_name=_('Survey'))
     user = CachedForeignKey(User, blank=True, null=True, verbose_name=_('User'))
     time = models.DateTimeField(_('Time'), auto_now=True)
-    ip_address = models.IPAddressField(_('IP Address'), null=True)
+    ip_address = models.GenericIPAddressField(_('IP Address'), null=True)
 
     class Meta:
         verbose_name = _('Vote')
@@ -412,7 +412,7 @@ class Vote(models.Model):
     poll = CachedForeignKey(Poll, verbose_name=_('Poll'))
     user = CachedForeignKey(User, blank=True, null=True, verbose_name=_('User'))
     time = models.DateTimeField(_('Time'), auto_now=True)
-    ip_address = models.IPAddressField(_('IP Address'), null=True)
+    ip_address = models.GenericIPAddressField(_('IP Address'), null=True)
 
     class Meta:
         verbose_name = _('Vote')
