@@ -19,6 +19,7 @@ from ella.core.views import get_templates_from_publishable
 
 from ella_polls.models import Poll, Contestant, Survey
 from ella_polls.utils.wizard import FormWizard
+from ella_polls.utils.forms import as_widget_dj_compat 
 from ella_polls.utils import transaction
 from ella_polls.conf import polls_settings
 
@@ -359,7 +360,7 @@ def QuestionForm(question):
             field = self['choice']
             # TODO: move choice percentage to question and use it here!!
             choice_list = fudge_choice_percentages(field.field.queryset)
-            for choice, input in  zip(choice_list, field.as_widget(field.field.widget)):
+            for choice, input in  zip(choice_list, as_widget_dj_compat(field, field.field.widget)):
                 yield choice, input
 
     return _QuestionForm
