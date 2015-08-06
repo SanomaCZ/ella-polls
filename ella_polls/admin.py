@@ -16,6 +16,7 @@ from django.template import loader, RequestContext
 from ella.core.admin import ListingInlineAdmin
 from ella.core.cache import get_cached_object_or_404
 
+from ella_polls.utils import get_model_name_from_class
 from ella_polls.models import Poll, Contest, Contestant, Quiz, Result, Choice, \
     Vote, Question, Result, Survey
 
@@ -178,7 +179,7 @@ class ContestOptions(admin.ModelAdmin):
         contest = get_cached_object_or_404(Contest, pk=contest_pk)
         contestants = contest.get_correct_answers()
         title = u"%s '%s': %s" % (Contest._meta.verbose_name, contest.title, _('Correct Answers'))
-        module_name = Contestant._meta.module_name
+        module_name = get_model_name_from_class(Contestant)
         context = {
             'contest': contest,
             'contestants': contestants,

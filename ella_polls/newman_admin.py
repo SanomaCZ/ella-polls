@@ -16,6 +16,7 @@ try:
 
     from ella.core.newman_admin import ListingInlineAdmin, PublishableAdmin
     from ella.core.cache import get_cached_object_or_404
+    from ella_polls.utils import get_model_name_from_class
     from ella_polls.models import Contest, Contestant, Quiz, Result, Choice, \
         Vote, Question, Survey, Poll
 
@@ -315,7 +316,7 @@ try:
             contest = get_cached_object_or_404(Contest, pk=contest_pk)
             contestants = contest.get_correct_answers()
             title = u"%s '%s': %s" % (Contest._meta.verbose_name, contest.title, _('Correct Answers'))
-            module_name = Contestant._meta.module_name
+            module_name = get_model_name_from_class(Contestant)
 
             return render_to_response('newman/polls/correct-answers.html',
                 {'contestants' : contestants, 'title' : title, 'module_name' : module_name})
